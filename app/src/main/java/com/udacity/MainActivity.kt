@@ -7,6 +7,8 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.ACTION_VIEW
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
@@ -25,9 +27,10 @@ class MainActivity : AppCompatActivity() {
 
     private var downloadID: Long = 0
     private var usedUrl: String? = null
+    private var selectedRadioId = 0
 
     private lateinit var notificationManager: NotificationManager
-    //private lateinit var pendingIntent: PendingIntent
+    private lateinit var contentPendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,24 +58,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         loadingButton.setOnClickListener {
+            selectedRadioId = radioGroup.checkedRadioButtonId
             download()
         }
     }
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            // Return the button state to Completed once it's done
-            custom_button.changeState(ButtonState.Completed)
             val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            Log.d("Download Status", "id: $id")
-
-            notificationManager =
-                getSystemService(NotificationManager::class.java) as NotificationManager
 
             notificationManager.sendNotification(
                 context.getString(R.string.notification_description),
                 context
             )
+            // Return the button state to Completed once it's done
+            custom_button.changeState(ButtonState.Completed)
         }
     }
 
@@ -97,7 +97,6 @@ class MainActivity : AppCompatActivity() {
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
-        Log.d("Download Status", "downloadID: $downloadID")
     }
 
     companion object {
@@ -105,7 +104,6 @@ class MainActivity : AppCompatActivity() {
         private const val UDACITY_URL =
             "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter"
         private const val RETROFIT_URL = "https://github.com/square/retrofit"
-        private const val CHANNEL_ID = "channelId"
     }
 
     private fun NotificationManager.sendNotification(
@@ -114,8 +112,10 @@ class MainActivity : AppCompatActivity() {
     ) {
         val NOTIFICATION_ID = 0
 
-        val contentIntent = Intent(applicationContext, DetailActivity::class.java)
-        val contentPendingIntent = PendingIntent.getActivity(
+        val contentIntent = Intent(applicationContext, DetailActivity::class.java).apply {
+            putExtra("radio_id", selectedRadioId)
+        }
+        contentPendingIntent = PendingIntent.getActivity(
             applicationContext,
             NOTIFICATION_ID, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -143,9 +143,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = getString(R.string.load_notification_channel_id)
             val channelName = getString(R.string.load_notification_channel_name)
             val notificationChannel = NotificationChannel(
-                CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_HIGH
+                channelId, channelName, NotificationManager.IMPORTANCE_HIGH
             )
             notificationChannel.enableVibration(true)
 

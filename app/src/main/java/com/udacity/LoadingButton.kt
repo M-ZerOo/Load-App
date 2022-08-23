@@ -9,7 +9,6 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateInterpolator
-import android.view.animation.LinearInterpolator
 import kotlin.properties.Delegates
 
 class LoadingButton @JvmOverloads constructor(
@@ -163,10 +162,7 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun performClick(): Boolean {
         super.performClick()
-        if (buttonState == ButtonState.Loading) {
-            return false
-        }
-        return true
+        return buttonState != ButtonState.Loading
     }
 
     // To change the state of the button from the MainActivity

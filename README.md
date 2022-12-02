@@ -10,3 +10,5 @@ A demo app to download a file from Internet by clicking on a custom-built button
    - circle gets be animated from 0 to 360 degrees
 
 A notification will be sent once the download is complete. When a user clicks on notification, the user lands on detail activity and the notification gets dismissed. In detail activity, the status of the download will be displayed and animated via MotionLayout upon opening the activity.
+
+Ps. It's the third project to submit for Udacity Advanced Android Kotlin Development Nanodegree.
